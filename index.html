@@ -1,8 +1,52 @@
-<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"><title>English Adventure V10.1</title><link rel="stylesheet" href="style.css?v=10200"></head><body><main id="app">
-<section id="menu" class="screen active"><div class="art-menu"><img src="assets/logo.png" class="logo"><img src="assets/mascot.png" class="mascot"><p>ผจญภัย • เก็บคำศัพท์ • สร้างโลกของเรา</p><div class="menu"><button id="playBtn">▶ PLAY</button><button id="continueBtn">↻ CONTINUE</button><button id="bookBtn">📖 ADVENTURE BOOK</button><button id="parentBtn">📊 PARENTS</button><button id="settingsBtn">⚙️ SETTINGS</button></div><small>Build 10.2.0 — PNG Art Fix</small></div></section>
-<section id="characterSelect" class="screen"><div class="panel"><button class="backBtn">← กลับ</button><h2>เลือกนักผจญภัย</h2><div class="characters"><button data-character="boy"><canvas id="boyPreview" width="220" height="250"></canvas><b>เด็กชาย</b></button><button data-character="girl"><canvas id="girlPreview" width="220" height="250"></canvas><b>เด็กหญิง</b></button></div></div></section>
-<section id="gameScreen" class="screen"><header><button id="homeBtn">⌂</button><b>🪙 <span id="coinCount">0</span></b><b>⭐ <span id="starCount">0</span></b><b>❤️❤️❤️</b></header><canvas id="gameCanvas" width="960" height="540"></canvas><div id="wordGate" class="modal hidden"><div class="gate"><div id="gatePicture">🍎</div><h2>เปิดประตูคำศัพท์</h2><button id="hearWordBtn">🔊 ฟังคำ</button><button id="hearSpellBtn">🔤 ฟังสะกด</button><div id="slots"></div><div id="letters"></div><p id="gateMessage"></p></div></div><div class="controls"><button id="leftBtn">◀</button><button id="jumpBtn">▲</button><button id="rightBtn">▶</button></div></section>
-<section id="book" class="screen"><div class="panel"><button class="backBtn">← กลับ</button><h2>📖 Adventure Book</h2><div id="bookWords" class="book"></div></div></section>
-<section id="parents" class="screen"><div class="panel"><button class="backBtn">← กลับ</button><h2>ผลการเล่น</h2><p>เหรียญ <b id="pCoins">0</b></p><p>ดาว <b id="pStars">0</b></p><p>คำที่ผ่าน <b id="pWords">0</b></p><button id="resetBtn">ล้างข้อมูล</button></div></section>
-<section id="settings" class="screen"><div class="panel"><button class="backBtn">← กลับ</button><h2>ตั้งค่าเสียง</h2><select id="voiceSelect"></select><input id="voiceRate" type="range" min=".6" max="1" step=".05" value=".78"><button id="testVoiceBtn">ทดสอบ apple</button></div></section>
-</main><script src="src/main.js?v=10200"></script></body></html>
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>English Adventure V11</title>
+<link rel="stylesheet" href="style.css?v=11000">
+</head>
+<body>
+<main>
+<section id="menuScreen" class="screen active">
+  <div class="menu-card">
+    <img src="logo.png" class="logo" alt="English Adventure">
+    <img src="mascot.png" class="mascot" alt="Mascot">
+    <p>ผจญภัย • เก็บคำศัพท์ • สร้างโลกของเรา</p>
+    <button id="playBtn" class="primary">▶ PLAY</button>
+    <button id="continueBtn">↻ CONTINUE</button>
+    <button id="bookBtn">📖 ADVENTURE BOOK</button>
+    <button id="parentsBtn">📊 PARENTS</button>
+    <button id="settingsBtn">⚙️ SETTINGS</button>
+    <small>Build 11.0.0 — Flat Phaser Edition</small>
+  </div>
+</section>
+
+<section id="characterScreen" class="screen">
+  <div class="panel">
+    <button class="back">← กลับ</button>
+    <h2>เลือกนักผจญภัย</h2>
+    <div class="characters">
+      <button data-character="boy"><canvas id="boyPreview" width="220" height="230"></canvas><b>เด็กชาย</b></button>
+      <button data-character="girl"><canvas id="girlPreview" width="220" height="230"></canvas><b>เด็กหญิง</b></button>
+    </div>
+  </div>
+</section>
+
+<section id="gameScreen" class="screen">
+  <div class="hud"><button id="homeBtn">⌂</button><b>🪙 <span id="coins">0</span></b><b>⭐ <span id="stars">0</span></b><b>❤️❤️❤️</b></div>
+  <div id="game"></div>
+  <div class="controls"><button id="left">◀</button><button id="jump">▲</button><button id="right">▶</button></div>
+</section>
+
+<section id="bookScreen" class="screen"><div class="panel"><button class="back">← กลับ</button><h2>📖 Adventure Book</h2><div id="bookGrid" class="book"></div></div></section>
+<section id="parentsScreen" class="screen"><div class="panel"><button class="back">← กลับ</button><h2>ผลการเล่น</h2><p>เหรียญ: <b id="pCoins">0</b></p><p>ดาว: <b id="pStars">0</b></p><p>คำที่ผ่าน: <b id="pWords">0</b></p><button id="resetBtn">ล้างข้อมูล</button></div></section>
+<section id="settingsScreen" class="screen"><div class="panel"><button class="back">← กลับ</button><h2>ตั้งค่าเสียง</h2><select id="voiceSelect"></select><input id="voiceRate" type="range" min=".6" max="1" step=".05" value=".78"><button id="testVoice">ทดสอบ apple</button></div></section>
+
+<div id="gateModal" class="modal hidden">
+  <div class="gate-card"><div id="gatePic" class="gate-pic">🍎</div><h2>เปิดประตูคำศัพท์</h2><button id="hearWord">🔊 ฟังคำ</button><button id="hearSpell">🔤 ฟังสะกด</button><div id="slots"></div><div id="letters"></div><p id="message"></p></div>
+</div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/phaser@3.90.0/dist/phaser.min.js"></script>
+<script src="main.js?v=11000"></script>
+</body></html>

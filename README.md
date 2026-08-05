@@ -1,10 +1,18 @@
-# English Adventure V10.2 PNG Art Fix
+# English Adventure V11.0 Flat Phaser Edition
 
-แก้ไขจาก V10.1:
-- เปลี่ยนโลโก้และมาสคอตจาก SVG เป็น PNG
-- เพิ่มตัวละครเด็กชาย/เด็กหญิงแบบ sprite sheet PNG
-- เพิ่มฉาก Green Garden PNG
-- ยังคงระบบเลือกตัวละคร Adventure Book และเกมเดิม
-- ไม่มี Service Worker
+ไฟล์ทั้งหมดอยู่หน้าเดียวกัน เหมาะกับการอัปโหลดผ่าน iPhone
 
-อัปโหลดไฟล์ทั้งหมดทับ V10.1 และตรวจว่ามีโฟลเดอร์ assets/ กับ src/ ครบ
+ไฟล์สำคัญ:
+index.html
+style.css
+main.js
+logo.png
+mascot.png
+heroes.png
+background.png
+coin.png
+gate.png
+README.md
+.nojekyll
+
+V11 ใช้ Phaser 3.90.0 ผ่าน CDN อย่างเป็นทางการ
