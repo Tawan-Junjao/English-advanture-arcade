@@ -36,9 +36,9 @@ function bindHoldButton(element,onStart,onEnd){
 }
 
 const SAVE="englishAdventureV11";
-const WORDS=[{word:"cat",pic:"🐱"},{word:"dog",pic:"🐶"},{word:"fish",pic:"🐟"},{word:"apple",pic:"🍎"}];
+const WORDS=[{word:"cat",pic:"🐱",sentence:"I see a cat."},{word:"dog",pic:"🐶",sentence:"The dog can run."},{word:"fish",pic:"🐟",sentence:"The fish can swim."},{word:"apple",pic:"🍎",sentence:"I eat an apple."},{word:"bee",pic:"🐝",sentence:"The bee can fly."},{word:"car",pic:"🚗",sentence:"The car is red."},{word:"egg",pic:"🥚",sentence:"This is an egg."},{word:"hat",pic:"🎩",sentence:"I have a hat."},{word:"lion",pic:"🦁",sentence:"The lion is big."},{word:"milk",pic:"🥛",sentence:"I drink milk."}];
 const LETTER={A:"ay",B:"bee",C:"see",D:"dee",E:"ee",F:"eff",G:"gee",H:"aitch",I:"eye",J:"jay",K:"kay",L:"ell",M:"em",N:"en",O:"oh",P:"pee",Q:"cue",R:"are",S:"ess",T:"tee"};
-let state;try{state=Object.assign({coins:0,stars:0,words:0,character:"boy",unlocked:[]},JSON.parse(localStorage.getItem(SAVE)||"{}"))}catch{state={coins:0,stars:0,words:0,character:"boy",unlocked:[]}}
+let state;try{state=Object.assign({coins:0,stars:0,words:0,character:"boy",unlocked:[],mastery:{}},JSON.parse(localStorage.getItem(SAVE)||"{}"))}catch{state={coins:0,stars:0,words:0,character:"boy",unlocked:[],mastery:{}}}
 let game=null,scene=null,voiceName="",voiceRate=.78,built=[];
 function save(){localStorage.setItem(SAVE,JSON.stringify(state));updateHud()}
 function show(id){
@@ -55,7 +55,7 @@ function loadVoices(){const v=voices();$("#voiceSelect").innerHTML=v.map(x=>`<op
 function speak(t,r=voiceRate){speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(String(t).toLowerCase()),v=voices().find(x=>x.name===voiceName)||voices()[0];if(v)u.voice=v;u.lang=v?.lang||"en-US";u.rate=r;speechSynthesis.speak(u)}
 function spell(w){speak(w.toUpperCase().split("").map(x=>LETTER[x]).join(", "),Math.max(.62,voiceRate-.08))}
 function drawPreview(canvas,row){const c=canvas.getContext("2d"),im=new Image();im.onload=()=>{c.fillStyle="#dff6ff";c.fillRect(0,0,220,230);c.drawImage(im,0,row*128,128,128,35,25,150,150)};im.src="heroes.png"}
-function renderBook(){$("#bookGrid").innerHTML=WORDS.map(w=>state.unlocked.includes(w.word)?`<div>${w.pic} <b>${w.word.toUpperCase()}</b></div>`:`<div class="locked">🔒 ยังไม่ปลดล็อก</div>`).join("")}
+let bookFilter="all",selectedBookWord=null,reviewWord=null;function masteryFor(word){if(!state.mastery)state.mastery={};return Math.max(0,Math.min(100,Number(state.mastery[word]||0)))}function renderBook(){const unlocked=WORDS.filter(w=>state.unlocked.includes(w.word)).length;$("#bookUnlocked").textContent=unlocked;$("#bookTotal").textContent=WORDS.length;$("#bookPercent").textContent=Math.round(unlocked/WORDS.length*100)+"%";const rows=WORDS.filter(w=>bookFilter==="all"||state.unlocked.includes(w.word));$("#bookGrid").innerHTML=rows.map(w=>{const open=state.unlocked.includes(w.word);return `<button class="book-card ${open?"":"locked"}" data-word="${w.word}" ${open?"":"disabled"}><span class="pic">${open?w.pic:"🔒"}</span><span class="copy"><b>${open?w.word.toUpperCase():"ยังไม่ปลดล็อก"}</b><small>${open?w.sentence:"เล่นเพื่อสะสมคำนี้"}</small></span><b>${open?masteryFor(w.word)+"%":"LOCK"}</b></button>`}).join("");$$(".book-card:not(.locked)").forEach(b=>b.onclick=()=>openWordDetail(b.dataset.word))}function openWordDetail(word){selectedBookWord=WORDS.find(w=>w.word===word);if(!selectedBookWord)return;$("#detailPic").textContent=selectedBookWord.pic;$("#detailWord").textContent=selectedBookWord.word.toUpperCase();$("#detailSentence").textContent=selectedBookWord.sentence;const m=masteryFor(word);$("#masteryText").textContent=m+"%";$("#masteryFill").style.width=m+"%";$("#wordDetailModal").classList.remove("hidden")}function unlockedWords(){return WORDS.filter(w=>state.unlocked.includes(w.word))}function startBookReview(){const list=unlockedWords();if(list.length<2){alert("ปลดล็อกอย่างน้อย 2 คำก่อนเริ่มทบทวน");return}$("#reviewModal").classList.remove("hidden");nextReviewQuestion()}function nextReviewQuestion(){const list=unlockedWords();reviewWord=list[Math.floor(Math.random()*list.length)];const choices=shuffle([reviewWord,...shuffle(list.filter(w=>w.word!==reviewWord.word)).slice(0,3)]);$("#reviewPic").textContent=reviewWord.pic;$("#reviewMessage").textContent="";$("#reviewChoices").innerHTML=choices.map(w=>`<button data-word="${w.word}">${w.word.toUpperCase()}</button>`).join("");$$("#reviewChoices button").forEach(b=>b.onclick=()=>answerReview(b));setTimeout(()=>speak(reviewWord.word),180)}function answerReview(b){const ok=b.dataset.word===reviewWord.word;state.mastery[reviewWord.word]=Math.max(0,Math.min(100,masteryFor(reviewWord.word)+(ok?10:-4)));b.classList.add(ok?"correct":"wrong");$("#reviewMessage").textContent=ok?"ถูกต้อง เก่งมาก ⭐":"คำตอบคือ "+reviewWord.word.toUpperCase();save();setTimeout(nextReviewQuestion,900)}
 function renderParents(){$("#pCoins").textContent=state.coins;$("#pStars").textContent=state.stars;$("#pWords").textContent=state.words}
 
 
@@ -152,7 +152,7 @@ function monsterEscaped(){
   clearInterval(monsterState.timer);
   state.stars++;
   state.words++;
-  if(!state.unlocked.includes(monsterState.word.word))state.unlocked.push(monsterState.word.word);
+  if(!state.unlocked.includes(monsterState.word.word))state.unlocked.push(monsterState.word.word);state.mastery[monsterState.word.word]=Math.min(100,masteryFor(monsterState.word.word)+15);
   save();
   $("#escapeHero").style.left="72%";
   $("#escapeMonster").style.left="92%";
@@ -219,7 +219,7 @@ function createGame(){
  if(game){game.destroy(true);game=null}
  game=new Phaser.Game({type:Phaser.AUTO,parent:"game",width:960,height:540,backgroundColor:"#8bd2ff",physics:{default:"arcade",arcade:{gravity:{y:1400},debug:false}},scene:[World],scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH,width:960,height:540,expandParent:true}});
 }
-function pressLetter(b,it){const e=it.word.toUpperCase()[built.length];if(b.dataset.l!==e){$("#message").textContent="ลองอีกครั้งนะ";return}b.disabled=true;built.push(e);$$(".slot")[built.length-1].textContent=e;if(built.length===it.word.length){state.stars++;state.words++;if(!state.unlocked.includes(it.word))state.unlocked.push(it.word);save();$("#message").textContent="เปิดประตูสำเร็จ! ⭐";setTimeout(()=>{$("#gateModal").classList.add("hidden");scene.physics.resume();scene.modal=false;scene.gate.disableBody(true,true);scene.hero.x+=120},700)}}
+function pressLetter(b,it){const e=it.word.toUpperCase()[built.length];if(b.dataset.l!==e){$("#message").textContent="ลองอีกครั้งนะ";return}b.disabled=true;built.push(e);$$(".slot")[built.length-1].textContent=e;if(built.length===it.word.length){state.stars++;state.words++;if(!state.unlocked.includes(it.word))state.unlocked.push(it.word);state.mastery[it.word]=Math.min(100,masteryFor(it.word)+15);save();$("#message").textContent="เปิดประตูสำเร็จ! ⭐";setTimeout(()=>{$("#gateModal").classList.add("hidden");scene.physics.resume();scene.modal=false;scene.gate.disableBody(true,true);scene.hero.x+=120},700)}}
 $("#playBtn").onclick=()=>show("characterScreen");
 $("#continueBtn").onclick=()=>{show("gameScreen");createGame()};
 $$("[data-character]").forEach(b=>b.onclick=()=>{state.character=b.dataset.character;save();show("gameScreen");createGame()});
@@ -232,7 +232,7 @@ bindHoldButton($("#jump"),()=>{
 },()=>{});
 $("#hearWord").onclick=()=>speak(WORDS[state.words%WORDS.length].word);$("#hearSpell").onclick=()=>spell(WORDS[state.words%WORDS.length].word);
 $("#voiceSelect").onchange=e=>voiceName=e.target.value;$("#voiceRate").oninput=e=>voiceRate=Number(e.target.value);$("#testVoice").onclick=()=>speak("apple");speechSynthesis.onvoiceschanged=loadVoices;
-$("#resetBtn").onclick=()=>{state={coins:0,stars:0,words:0,character:"boy",unlocked:[]};save();renderParents()};
+$("#resetBtn").onclick=()=>{state={coins:0,stars:0,words:0,character:"boy",unlocked:[],mastery:{}};save();renderParents()};
 $("#monsterHomeBtn").onclick=()=>{clearInterval(monsterState.timer);show("menuScreen")};
 $("#monsterHearWord").onclick=()=>monsterState.word&&speak(monsterState.word.word);
 $("#monsterHearSpell").onclick=()=>monsterState.word&&spell(monsterState.word.word);
@@ -240,5 +240,5 @@ document.querySelectorAll("button,canvas,#game,.controls").forEach(el=>{
   el.setAttribute("draggable","false");
   el.addEventListener("contextmenu",preventIOSMenu,{passive:false});
 });
-drawPreview($("#boyPreview"),0);drawPreview($("#girlPreview"),1);updateHud();loadVoices();
+$("#filterAll").onclick=()=>{bookFilter="all";$("#filterAll").classList.add("active");$("#filterUnlocked").classList.remove("active");renderBook()};$("#filterUnlocked").onclick=()=>{bookFilter="unlocked";$("#filterUnlocked").classList.add("active");$("#filterAll").classList.remove("active");renderBook()};$("#reviewBookBtn").onclick=startBookReview;$("#closeWordDetail").onclick=()=>$("#wordDetailModal").classList.add("hidden");$("#detailHearWord").onclick=()=>selectedBookWord&&speak(selectedBookWord.word);$("#detailHearSpell").onclick=()=>selectedBookWord&&spell(selectedBookWord.word);$("#closeReview").onclick=()=>$("#reviewModal").classList.add("hidden");$("#reviewHear").onclick=()=>reviewWord&&speak(reviewWord.word);drawPreview($("#boyPreview"),0);drawPreview($("#girlPreview"),1);updateHud();loadVoices();
 })();
