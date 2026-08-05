@@ -18,6 +18,130 @@ function drawPreview(canvas,row){const c=canvas.getContext("2d"),im=new Image();
 function renderBook(){$("#bookGrid").innerHTML=WORDS.map(w=>state.unlocked.includes(w.word)?`<div>${w.pic} <b>${w.word.toUpperCase()}</b></div>`:`<div class="locked">🔒 ยังไม่ปลดล็อก</div>`).join("")}
 function renderParents(){$("#pCoins").textContent=state.coins;$("#pStars").textContent=state.stars;$("#pWords").textContent=state.words}
 
+
+let monsterState={round:0,total:6,time:16,progress:0,lives:3,timer:null,built:[],word:null,locked:false};
+
+function resetMonsterPositions(){
+  const hero=$("#escapeHero"),mon=$("#escapeMonster");
+  hero.classList.remove("shake");
+  hero.style.left="8%";
+  mon.style.left="78%";
+  $("#dangerFill").style.width="0%";
+}
+
+function applyHeroSprite(){
+  const hero=$("#escapeHero");
+  const row=state.character==="girl"?1:0;
+  hero.style.backgroundPosition=`0px ${-row*96}px`;
+}
+
+function startMonsterEscape(){
+  if(game){game.destroy(true);game=null}
+  monsterState.round=0;
+  show("monsterScreen");
+  applyHeroSprite();
+  nextMonsterRound();
+}
+
+function nextMonsterRound(){
+  clearInterval(monsterState.timer);
+  monsterState.round++;
+  monsterState.time=16;
+  monsterState.progress=0;
+  monsterState.lives=3;
+  monsterState.built=[];
+  monsterState.locked=false;
+  monsterState.word=WORDS[(state.words+monsterState.round-1)%WORDS.length];
+  resetMonsterPositions();
+
+  $("#monsterRound").textContent=`รอบ ${monsterState.round}/${monsterState.total}`;
+  $("#monsterLives").textContent="❤️❤️❤️";
+  $("#monsterTimer").textContent="⏱️ 16";
+  $("#monsterPic").textContent=monsterState.word.pic;
+  $("#monsterMessage").textContent="สัตว์ประหลาดกำลังมา!";
+  $("#monsterSlots").innerHTML=monsterState.word.word.split("").map(()=>'<span class="slot"></span>').join("");
+  $("#monsterLetters").innerHTML=shuffle(monsterState.word.word.toUpperCase().split("")).map(l=>`<button class="monster-letter" data-l="${l}">${l}</button>`).join("");
+  $$(".monster-letter").forEach(b=>b.onclick=()=>monsterPress(b));
+
+  setTimeout(()=>speak(monsterState.word.word),250);
+  monsterState.timer=setInterval(()=>{
+    if(monsterState.locked)return;
+    monsterState.time--;
+    monsterState.progress+=6;
+    updateMonsterHud();
+    if(monsterState.time<=0||monsterState.progress>=70)monsterCaught();
+  },1000);
+}
+
+function updateMonsterHud(){
+  $("#monsterTimer").textContent=`⏱️ ${monsterState.time}`;
+  $("#monsterLives").textContent="❤️".repeat(Math.max(0,monsterState.lives));
+  $("#escapeMonster").style.left=`${Math.max(18,78-monsterState.progress)}%`;
+  $("#dangerFill").style.width=`${Math.min(100,monsterState.progress/70*100)}%`;
+}
+
+function monsterPress(btn){
+  if(monsterState.locked||btn.disabled)return;
+  const target=monsterState.word.word.toUpperCase();
+  const expected=target[monsterState.built.length];
+  const chosen=btn.dataset.l;
+
+  if(chosen===expected){
+    btn.disabled=true;
+    monsterState.built.push(chosen);
+    $$("#monsterSlots .slot")[monsterState.built.length-1].textContent=chosen;
+    monsterState.progress=Math.max(0,monsterState.progress-5);
+    $("#escapeHero").style.left=`${Math.min(54,8+monsterState.built.length*7)}%`;
+    updateMonsterHud();
+    if(monsterState.built.length===target.length)monsterEscaped();
+  }else{
+    monsterState.lives--;
+    monsterState.progress+=10;
+    $("#monsterMessage").textContent="เกือบแล้ว ลองอีกครั้งนะ";
+    $("#escapeHero").classList.remove("shake");
+    void $("#escapeHero").offsetWidth;
+    $("#escapeHero").classList.add("shake");
+    updateMonsterHud();
+    if(monsterState.lives<=0||monsterState.progress>=70)monsterCaught();
+  }
+}
+
+function monsterEscaped(){
+  if(monsterState.locked)return;
+  monsterState.locked=true;
+  clearInterval(monsterState.timer);
+  state.stars++;
+  state.words++;
+  if(!state.unlocked.includes(monsterState.word.word))state.unlocked.push(monsterState.word.word);
+  save();
+  $("#escapeHero").style.left="72%";
+  $("#escapeMonster").style.left="92%";
+  $("#monsterMessage").textContent="หนีสำเร็จ! เก่งมาก ⭐";
+  speak("great job",.82);
+  setTimeout(()=>{
+    resetMonsterPositions();
+    if(monsterState.round>=monsterState.total){
+      $("#monsterMessage").textContent=`จบด่าน! หนีสำเร็จ ${monsterState.total} รอบ`;
+      $("#monsterLetters").innerHTML='<button class="monster-letter" id="monsterAgain">เล่นอีกครั้ง</button>';
+      $("#monsterSlots").innerHTML="";
+      $("#monsterAgain").onclick=startMonsterEscape;
+    }else{
+      nextMonsterRound();
+    }
+  },1100);
+}
+
+function monsterCaught(){
+  if(monsterState.locked)return;
+  monsterState.locked=true;
+  clearInterval(monsterState.timer);
+  $("#escapeMonster").style.left="18%";
+  $("#monsterMessage").textContent="ถูกจับแล้ว ลองคำนี้อีกครั้ง";
+  speak("try again",.82);
+  $("#monsterLetters").insertAdjacentHTML("beforeend",'<button class="monster-letter" id="monsterRetry">ลองใหม่</button>');
+  $("#monsterRetry").onclick=()=>{monsterState.round--;nextMonsterRound()};
+}
+
 class World extends Phaser.Scene{
  constructor(){super("World")}
  preload(){this.load.image("bg","background.png");this.load.spritesheet("heroes","heroes.png",{frameWidth:128,frameHeight:128});this.load.image("coin","coin.png");this.load.image("gate","gate.png")}
@@ -59,7 +183,7 @@ function pressLetter(b,it){const e=it.word.toUpperCase()[built.length];if(b.data
 $("#playBtn").onclick=()=>show("characterScreen");
 $("#continueBtn").onclick=()=>{show("gameScreen");createGame()};
 $$("[data-character]").forEach(b=>b.onclick=()=>{state.character=b.dataset.character;save();show("gameScreen");createGame()});
-$("#bookBtn").onclick=()=>{renderBook();show("bookScreen")};$("#parentsBtn").onclick=()=>show("parentsScreen");$("#settingsBtn").onclick=()=>show("settingsScreen");
+$("#monsterBtn").onclick=startMonsterEscape;$("#bookBtn").onclick=()=>{renderBook();show("bookScreen")};$("#parentsBtn").onclick=()=>show("parentsScreen");$("#settingsBtn").onclick=()=>show("settingsScreen");
 $("#homeBtn").onclick=()=>{if(game){game.destroy(true);game=null}show("menuScreen")};$$(".back").forEach(b=>b.onclick=()=>show("menuScreen"));
 $("#left").onpointerdown=()=>scene&&(scene.keys.left=true);$("#left").onpointerup=$("#left").onpointerleave=()=>scene&&(scene.keys.left=false);
 $("#right").onpointerdown=()=>scene&&(scene.keys.right=true);$("#right").onpointerup=$("#right").onpointerleave=()=>scene&&(scene.keys.right=false);
@@ -67,5 +191,8 @@ $("#jump").onpointerdown=()=>{if(scene&&scene.hero.body.blocked.down)scene.hero.
 $("#hearWord").onclick=()=>speak(WORDS[state.words%WORDS.length].word);$("#hearSpell").onclick=()=>spell(WORDS[state.words%WORDS.length].word);
 $("#voiceSelect").onchange=e=>voiceName=e.target.value;$("#voiceRate").oninput=e=>voiceRate=Number(e.target.value);$("#testVoice").onclick=()=>speak("apple");speechSynthesis.onvoiceschanged=loadVoices;
 $("#resetBtn").onclick=()=>{state={coins:0,stars:0,words:0,character:"boy",unlocked:[]};save();renderParents()};
+$("#monsterHomeBtn").onclick=()=>{clearInterval(monsterState.timer);show("menuScreen")};
+$("#monsterHearWord").onclick=()=>monsterState.word&&speak(monsterState.word.word);
+$("#monsterHearSpell").onclick=()=>monsterState.word&&spell(monsterState.word.word);
 drawPreview($("#boyPreview"),0);drawPreview($("#girlPreview"),1);updateHud();loadVoices();
 })();

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <title>English Adventure V11</title>
-<link rel="stylesheet" href="style.css?v=11000">
+<link rel="stylesheet" href="style.css?v=11100">
 </head>
 <body>
 <main>
@@ -15,10 +15,10 @@
     <p>ผจญภัย • เก็บคำศัพท์ • สร้างโลกของเรา</p>
     <button id="playBtn" class="primary">▶ PLAY</button>
     <button id="continueBtn">↻ CONTINUE</button>
-    <button id="bookBtn">📖 ADVENTURE BOOK</button>
+    <button id="monsterBtn">👾 MONSTER ESCAPE</button><button id="bookBtn">📖 ADVENTURE BOOK</button>
     <button id="parentsBtn">📊 PARENTS</button>
     <button id="settingsBtn">⚙️ SETTINGS</button>
-    <small>Build 11.0.0 — Flat Phaser Edition</small>
+    <small>Build 11.1.0 — Monster Escape</small>
   </div>
 </section>
 
@@ -39,6 +39,34 @@
   <div class="controls"><button id="left">◀</button><button id="jump">▲</button><button id="right">▶</button></div>
 </section>
 
+
+<section id="monsterScreen" class="screen">
+  <div class="hud">
+    <button id="monsterHomeBtn">⌂</button>
+    <b id="monsterRound">รอบ 1/6</b>
+    <b id="monsterLives">❤️❤️❤️</b>
+  </div>
+  <div class="monster-stage">
+    <div class="monster-sky">
+      <div id="escapeHero" class="escape-hero"></div>
+      <img id="escapeMonster" src="monster.png" alt="สัตว์ประหลาด">
+    </div>
+    <div class="monster-info">
+      <span id="monsterTimer">⏱️ 16</span>
+      <div class="danger"><span id="dangerFill"></span></div>
+    </div>
+    <div class="monster-word">
+      <div id="monsterPic" class="monster-pic">🍎</div>
+      <p>ฟังเสียง แล้วสะกดให้ทัน!</p>
+      <button id="monsterHearWord">🔊 ฟังคำ</button>
+      <button id="monsterHearSpell">🔤 ฟังสะกด</button>
+      <div id="monsterSlots"></div>
+      <div id="monsterLetters"></div>
+      <p id="monsterMessage"></p>
+    </div>
+  </div>
+</section>
+
 <section id="bookScreen" class="screen"><div class="panel"><button class="back">← กลับ</button><h2>📖 Adventure Book</h2><div id="bookGrid" class="book"></div></div></section>
 <section id="parentsScreen" class="screen"><div class="panel"><button class="back">← กลับ</button><h2>ผลการเล่น</h2><p>เหรียญ: <b id="pCoins">0</b></p><p>ดาว: <b id="pStars">0</b></p><p>คำที่ผ่าน: <b id="pWords">0</b></p><button id="resetBtn">ล้างข้อมูล</button></div></section>
 <section id="settingsScreen" class="screen"><div class="panel"><button class="back">← กลับ</button><h2>ตั้งค่าเสียง</h2><select id="voiceSelect"></select><input id="voiceRate" type="range" min=".6" max="1" step=".05" value=".78"><button id="testVoice">ทดสอบ apple</button></div></section>
@@ -48,5 +76,5 @@
 </div>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/phaser@3.90.0/dist/phaser.min.js"></script>
-<script src="main.js?v=11000"></script>
+<script src="main.js?v=11100"></script>
 </body></html>

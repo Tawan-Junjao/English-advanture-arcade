@@ -1,18 +1,12 @@
-# English Adventure V11.0 Flat Phaser Edition
+# English Adventure V11.1 Monster Escape
 
-ไฟล์ทั้งหมดอยู่หน้าเดียวกัน เหมาะกับการอัปโหลดผ่าน iPhone
-
-ไฟล์สำคัญ:
-index.html
-style.css
-main.js
-logo.png
-mascot.png
-heroes.png
-background.png
-coin.png
-gate.png
-README.md
-.nojekyll
-
-V11 ใช้ Phaser 3.90.0 ผ่าน CDN อย่างเป็นทางการ
+เพิ่ม:
+- โหมด Monster Escape
+- สัตว์ประหลาดการ์ตูนต้นฉบับ
+- แถบเวลาและความอันตราย
+- หัวใจ 3 ดวง
+- สะกดให้ทันก่อนสัตว์ประหลาดเข้าถึง
+- กดถูก ตัวละครหนีไปข้างหน้า
+- กดผิด เสียหัวใจ
+- รีเซ็ตตัวละครและสัตว์ประหลาดทุกคำ
+- ไฟล์ทั้งหมดอยู่หน้าเดียวกัน
