@@ -1,13 +1,53 @@
 (()=>{
 "use strict";
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const preventIOSMenu=(event)=>event.preventDefault();
+["contextmenu","selectstart","dragstart"].forEach(type=>{
+  document.addEventListener(type,preventIOSMenu,{passive:false});
+});
+document.addEventListener("touchmove",(event)=>{
+  if(document.body.classList.contains("game-active"))event.preventDefault();
+},{passive:false});
+document.addEventListener("gesturestart",preventIOSMenu,{passive:false});
+document.addEventListener("gesturechange",preventIOSMenu,{passive:false});
+document.addEventListener("gestureend",preventIOSMenu,{passive:false});
+
+function bindHoldButton(element,onStart,onEnd){
+  const start=(event)=>{
+    event.preventDefault();
+    if(event.pointerId!==undefined && element.setPointerCapture){
+      try{element.setPointerCapture(event.pointerId)}catch{}
+    }
+    onStart();
+  };
+  const end=(event)=>{
+    event.preventDefault();
+    if(event.pointerId!==undefined && element.releasePointerCapture){
+      try{element.releasePointerCapture(event.pointerId)}catch{}
+    }
+    onEnd();
+  };
+  element.addEventListener("pointerdown",start,{passive:false});
+  ["pointerup","pointercancel","lostpointercapture"].forEach(type=>{
+    element.addEventListener(type,end,{passive:false});
+  });
+  element.addEventListener("touchstart",event=>event.preventDefault(),{passive:false});
+  element.addEventListener("touchend",event=>event.preventDefault(),{passive:false});
+}
+
 const SAVE="englishAdventureV11";
 const WORDS=[{word:"cat",pic:"🐱"},{word:"dog",pic:"🐶"},{word:"fish",pic:"🐟"},{word:"apple",pic:"🍎"}];
 const LETTER={A:"ay",B:"bee",C:"see",D:"dee",E:"ee",F:"eff",G:"gee",H:"aitch",I:"eye",J:"jay",K:"kay",L:"ell",M:"em",N:"en",O:"oh",P:"pee",Q:"cue",R:"are",S:"ess",T:"tee"};
 let state;try{state=Object.assign({coins:0,stars:0,words:0,character:"boy",unlocked:[]},JSON.parse(localStorage.getItem(SAVE)||"{}"))}catch{state={coins:0,stars:0,words:0,character:"boy",unlocked:[]}}
 let game=null,scene=null,voiceName="",voiceRate=.78,built=[];
 function save(){localStorage.setItem(SAVE,JSON.stringify(state));updateHud()}
-function show(id){$$(".screen").forEach(x=>x.classList.remove("active"));$("#"+id).classList.add("active");if(id==="parentsScreen")renderParents();if(id==="settingsScreen")loadVoices()}
+function show(id){
+  $$(".screen").forEach(x=>x.classList.remove("active"));
+  $("#"+id).classList.add("active");
+  document.body.classList.toggle("game-active",id==="gameScreen"||id==="monsterScreen");
+  if(id==="parentsScreen")renderParents();
+  if(id==="settingsScreen")loadVoices();
+}
 function updateHud(){$("#coins").textContent=state.coins;$("#stars").textContent=state.stars}
 function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
 function voices(){return speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang)||/English/i.test(v.name))}
@@ -177,7 +217,7 @@ class World extends Phaser.Scene{
 }
 function createGame(){
  if(game){game.destroy(true);game=null}
- game=new Phaser.Game({type:Phaser.AUTO,parent:"game",width:960,height:540,backgroundColor:"#8bd2ff",physics:{default:"arcade",arcade:{gravity:{y:1400},debug:false}},scene:[World],scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH}});
+ game=new Phaser.Game({type:Phaser.AUTO,parent:"game",width:960,height:540,backgroundColor:"#8bd2ff",physics:{default:"arcade",arcade:{gravity:{y:1400},debug:false}},scene:[World],scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH,width:960,height:540,expandParent:true}});
 }
 function pressLetter(b,it){const e=it.word.toUpperCase()[built.length];if(b.dataset.l!==e){$("#message").textContent="ลองอีกครั้งนะ";return}b.disabled=true;built.push(e);$$(".slot")[built.length-1].textContent=e;if(built.length===it.word.length){state.stars++;state.words++;if(!state.unlocked.includes(it.word))state.unlocked.push(it.word);save();$("#message").textContent="เปิดประตูสำเร็จ! ⭐";setTimeout(()=>{$("#gateModal").classList.add("hidden");scene.physics.resume();scene.modal=false;scene.gate.disableBody(true,true);scene.hero.x+=120},700)}}
 $("#playBtn").onclick=()=>show("characterScreen");
@@ -185,14 +225,20 @@ $("#continueBtn").onclick=()=>{show("gameScreen");createGame()};
 $$("[data-character]").forEach(b=>b.onclick=()=>{state.character=b.dataset.character;save();show("gameScreen");createGame()});
 $("#monsterBtn").onclick=startMonsterEscape;$("#bookBtn").onclick=()=>{renderBook();show("bookScreen")};$("#parentsBtn").onclick=()=>show("parentsScreen");$("#settingsBtn").onclick=()=>show("settingsScreen");
 $("#homeBtn").onclick=()=>{if(game){game.destroy(true);game=null}show("menuScreen")};$$(".back").forEach(b=>b.onclick=()=>show("menuScreen"));
-$("#left").onpointerdown=()=>scene&&(scene.keys.left=true);$("#left").onpointerup=$("#left").onpointerleave=()=>scene&&(scene.keys.left=false);
-$("#right").onpointerdown=()=>scene&&(scene.keys.right=true);$("#right").onpointerup=$("#right").onpointerleave=()=>scene&&(scene.keys.right=false);
-$("#jump").onpointerdown=()=>{if(scene&&scene.hero.body.blocked.down)scene.hero.setVelocityY(-620)};
+bindHoldButton($("#left"),()=>{if(scene)scene.keys.left=true},()=>{if(scene)scene.keys.left=false});
+bindHoldButton($("#right"),()=>{if(scene)scene.keys.right=true},()=>{if(scene)scene.keys.right=false});
+bindHoldButton($("#jump"),()=>{
+  if(scene&&scene.hero&&scene.hero.body.blocked.down)scene.hero.setVelocityY(-620);
+},()=>{});
 $("#hearWord").onclick=()=>speak(WORDS[state.words%WORDS.length].word);$("#hearSpell").onclick=()=>spell(WORDS[state.words%WORDS.length].word);
 $("#voiceSelect").onchange=e=>voiceName=e.target.value;$("#voiceRate").oninput=e=>voiceRate=Number(e.target.value);$("#testVoice").onclick=()=>speak("apple");speechSynthesis.onvoiceschanged=loadVoices;
 $("#resetBtn").onclick=()=>{state={coins:0,stars:0,words:0,character:"boy",unlocked:[]};save();renderParents()};
 $("#monsterHomeBtn").onclick=()=>{clearInterval(monsterState.timer);show("menuScreen")};
 $("#monsterHearWord").onclick=()=>monsterState.word&&speak(monsterState.word.word);
 $("#monsterHearSpell").onclick=()=>monsterState.word&&spell(monsterState.word.word);
+document.querySelectorAll("button,canvas,#game,.controls").forEach(el=>{
+  el.setAttribute("draggable","false");
+  el.addEventListener("contextmenu",preventIOSMenu,{passive:false});
+});
 drawPreview($("#boyPreview"),0);drawPreview($("#girlPreview"),1);updateHud();loadVoices();
 })();

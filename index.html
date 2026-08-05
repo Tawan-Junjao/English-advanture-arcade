@@ -2,9 +2,11 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>English Adventure V11</title>
-<link rel="stylesheet" href="style.css?v=11100">
+<link rel="stylesheet" href="style.css?v=11200">
 </head>
 <body>
 <main>
@@ -18,7 +20,7 @@
     <button id="monsterBtn">👾 MONSTER ESCAPE</button><button id="bookBtn">📖 ADVENTURE BOOK</button>
     <button id="parentsBtn">📊 PARENTS</button>
     <button id="settingsBtn">⚙️ SETTINGS</button>
-    <small>Build 11.1.0 — Monster Escape</small>
+    <small>Build 11.2.0 — iPhone/iPad Controls Fix</small>
   </div>
 </section>
 
@@ -36,7 +38,7 @@
 <section id="gameScreen" class="screen">
   <div class="hud"><button id="homeBtn">⌂</button><b>🪙 <span id="coins">0</span></b><b>⭐ <span id="stars">0</span></b><b>❤️❤️❤️</b></div>
   <div id="game"></div>
-  <div class="controls"><button id="left">◀</button><button id="jump">▲</button><button id="right">▶</button></div>
+  <div class="controls" aria-label="ปุ่มควบคุมเกม"><button id="left" aria-label="เดินซ้าย">◀</button><button id="jump" aria-label="กระโดด">▲</button><button id="right" aria-label="เดินขวา">▶</button></div>
 </section>
 
 
@@ -76,5 +78,5 @@
 </div>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/phaser@3.90.0/dist/phaser.min.js"></script>
-<script src="main.js?v=11100"></script>
+<script src="main.js?v=11200"></script>
 </body></html>
