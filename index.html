@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>English Adventure V11</title>
-<link rel="stylesheet" href="style.css?v=11300">
+<link rel="stylesheet" href="style.css?v=11400">
 </head>
 <body>
 <main>
@@ -20,7 +20,7 @@
     <button id="monsterBtn">👾 MONSTER ESCAPE</button><button id="bookBtn">📖 ADVENTURE BOOK</button>
     <button id="parentsBtn">📊 PARENTS</button>
     <button id="settingsBtn">⚙️ SETTINGS</button>
-    <small>Build 11.3.0 — Adventure Book</small>
+    <small>Build 11.4.0 — Parent Dashboard</small>
   </div>
 </section>
 
@@ -70,7 +70,7 @@
 </section>
 
 <section id="bookScreen" class="screen"><div class="panel"><button class="back">← กลับ</button><h2>📖 Adventure Book</h2><p>สะสมคำศัพท์ ฟังเสียง และทบทวนได้ทุกเวลา</p><div class="book-summary"><div><b id="bookUnlocked">0</b><span>ปลดล็อก</span></div><div><b id="bookTotal">0</b><span>ทั้งหมด</span></div><div><b id="bookPercent">0%</b><span>ความคืบหน้า</span></div></div><div class="book-tools"><button id="filterAll" class="active">ทั้งหมด</button><button id="filterUnlocked">ปลดล็อกแล้ว</button><button id="reviewBookBtn">🎯 ทบทวน</button></div><div id="bookGrid" class="book"></div></div></section><div id="wordDetailModal" class="modal hidden"><div class="word-detail"><button id="closeWordDetail" class="close">✕</button><div id="detailPic" class="detail-pic">🍎</div><h2 id="detailWord">APPLE</h2><p id="detailSentence"></p><button id="detailHearWord">🔊 ฟังคำ</button><button id="detailHearSpell">🔤 ฟังสะกด</button><p>ความชำนาญ <b id="masteryText">0%</b></p><div class="mastery"><span id="masteryFill"></span></div></div></div><div id="reviewModal" class="modal hidden"><div class="word-detail"><button id="closeReview" class="close">✕</button><h2>🎯 ทบทวนคำศัพท์</h2><div id="reviewPic" class="detail-pic">🍎</div><p>ฟังแล้วเลือกคำที่ถูกต้อง</p><button id="reviewHear">🔊 ฟังอีกครั้ง</button><div id="reviewChoices" class="review-choices"></div><p id="reviewMessage"></p></div></div>
-<section id="parentsScreen" class="screen"><div class="panel"><button class="back">← กลับ</button><h2>ผลการเล่น</h2><p>เหรียญ: <b id="pCoins">0</b></p><p>ดาว: <b id="pStars">0</b></p><p>คำที่ผ่าน: <b id="pWords">0</b></p><button id="resetBtn">ล้างข้อมูล</button></div></section>
+<section id="parentsScreen" class="screen"><div class="panel parent-panel"><button class="back">← กลับ</button><h2>📊 Parent Dashboard</h2><div class="parent-summary"><div><strong id="pCoins">0</strong><span>เหรียญ</span></div><div><strong id="pStars">0</strong><span>ดาว</span></div><div><strong id="pWords">0</strong><span>คำที่ผ่าน</span></div><div><strong id="pUnlocked">0</strong><span>คำที่ปลดล็อก</span></div><div><strong id="pAccuracy">0%</strong><span>ความแม่นยำ</span></div><div><strong id="pAverageMastery">0%</strong><span>ความชำนาญเฉลี่ย</span></div></div><div class="dashboard-section"><h3>คำที่ควรทบทวน</h3><div id="weakWords"></div></div><div class="dashboard-section"><h3>ความชำนาญรายคำ</h3><div id="masteryRows"></div></div><div class="dashboard-section"><h3>กิจกรรมล่าสุด</h3><div id="activityInfo"></div></div><button id="resetBtn" class="danger-btn">ล้างข้อมูลทั้งหมด</button></div></section>
 <section id="settingsScreen" class="screen"><div class="panel"><button class="back">← กลับ</button><h2>ตั้งค่าเสียง</h2><select id="voiceSelect"></select><input id="voiceRate" type="range" min=".6" max="1" step=".05" value=".78"><button id="testVoice">ทดสอบ apple</button></div></section>
 
 <div id="gateModal" class="modal hidden">
@@ -78,5 +78,5 @@
 </div>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/phaser@3.90.0/dist/phaser.min.js"></script>
-<script src="main.js?v=11300"></script>
+<script src="main.js?v=11400"></script>
 </body></html>

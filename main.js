@@ -38,9 +38,9 @@ function bindHoldButton(element,onStart,onEnd){
 const SAVE="englishAdventureV11";
 const WORDS=[{word:"cat",pic:"🐱",sentence:"I see a cat."},{word:"dog",pic:"🐶",sentence:"The dog can run."},{word:"fish",pic:"🐟",sentence:"The fish can swim."},{word:"apple",pic:"🍎",sentence:"I eat an apple."},{word:"bee",pic:"🐝",sentence:"The bee can fly."},{word:"car",pic:"🚗",sentence:"The car is red."},{word:"egg",pic:"🥚",sentence:"This is an egg."},{word:"hat",pic:"🎩",sentence:"I have a hat."},{word:"lion",pic:"🦁",sentence:"The lion is big."},{word:"milk",pic:"🥛",sentence:"I drink milk."}];
 const LETTER={A:"ay",B:"bee",C:"see",D:"dee",E:"ee",F:"eff",G:"gee",H:"aitch",I:"eye",J:"jay",K:"kay",L:"ell",M:"em",N:"en",O:"oh",P:"pee",Q:"cue",R:"are",S:"ess",T:"tee"};
-let state;try{state=Object.assign({coins:0,stars:0,words:0,character:"boy",unlocked:[],mastery:{}},JSON.parse(localStorage.getItem(SAVE)||"{}"))}catch{state={coins:0,stars:0,words:0,character:"boy",unlocked:[],mastery:{}}}
+let state;try{state=Object.assign({coins:0,stars:0,words:0,character:"boy",unlocked:[],mastery:{},reviewCorrect:0,reviewTotal:0,gateCorrect:0,gateWrong:0,monsterWins:0,monsterLosses:0,lastPlayed:""},JSON.parse(localStorage.getItem(SAVE)||"{}"))}catch{state={coins:0,stars:0,words:0,character:"boy",unlocked:[],mastery:{},reviewCorrect:0,reviewTotal:0,gateCorrect:0,gateWrong:0,monsterWins:0,monsterLosses:0,lastPlayed:""}}
 let game=null,scene=null,voiceName="",voiceRate=.78,built=[];
-function save(){localStorage.setItem(SAVE,JSON.stringify(state));updateHud()}
+function save(){state.lastPlayed=new Date().toISOString();localStorage.setItem(SAVE,JSON.stringify(state));updateHud()}
 function show(id){
   $$(".screen").forEach(x=>x.classList.remove("active"));
   $("#"+id).classList.add("active");
@@ -56,7 +56,7 @@ function speak(t,r=voiceRate){speechSynthesis.cancel();const u=new SpeechSynthes
 function spell(w){speak(w.toUpperCase().split("").map(x=>LETTER[x]).join(", "),Math.max(.62,voiceRate-.08))}
 function drawPreview(canvas,row){const c=canvas.getContext("2d"),im=new Image();im.onload=()=>{c.fillStyle="#dff6ff";c.fillRect(0,0,220,230);c.drawImage(im,0,row*128,128,128,35,25,150,150)};im.src="heroes.png"}
 let bookFilter="all",selectedBookWord=null,reviewWord=null;function masteryFor(word){if(!state.mastery)state.mastery={};return Math.max(0,Math.min(100,Number(state.mastery[word]||0)))}function renderBook(){const unlocked=WORDS.filter(w=>state.unlocked.includes(w.word)).length;$("#bookUnlocked").textContent=unlocked;$("#bookTotal").textContent=WORDS.length;$("#bookPercent").textContent=Math.round(unlocked/WORDS.length*100)+"%";const rows=WORDS.filter(w=>bookFilter==="all"||state.unlocked.includes(w.word));$("#bookGrid").innerHTML=rows.map(w=>{const open=state.unlocked.includes(w.word);return `<button class="book-card ${open?"":"locked"}" data-word="${w.word}" ${open?"":"disabled"}><span class="pic">${open?w.pic:"🔒"}</span><span class="copy"><b>${open?w.word.toUpperCase():"ยังไม่ปลดล็อก"}</b><small>${open?w.sentence:"เล่นเพื่อสะสมคำนี้"}</small></span><b>${open?masteryFor(w.word)+"%":"LOCK"}</b></button>`}).join("");$$(".book-card:not(.locked)").forEach(b=>b.onclick=()=>openWordDetail(b.dataset.word))}function openWordDetail(word){selectedBookWord=WORDS.find(w=>w.word===word);if(!selectedBookWord)return;$("#detailPic").textContent=selectedBookWord.pic;$("#detailWord").textContent=selectedBookWord.word.toUpperCase();$("#detailSentence").textContent=selectedBookWord.sentence;const m=masteryFor(word);$("#masteryText").textContent=m+"%";$("#masteryFill").style.width=m+"%";$("#wordDetailModal").classList.remove("hidden")}function unlockedWords(){return WORDS.filter(w=>state.unlocked.includes(w.word))}function startBookReview(){const list=unlockedWords();if(list.length<2){alert("ปลดล็อกอย่างน้อย 2 คำก่อนเริ่มทบทวน");return}$("#reviewModal").classList.remove("hidden");nextReviewQuestion()}function nextReviewQuestion(){const list=unlockedWords();reviewWord=list[Math.floor(Math.random()*list.length)];const choices=shuffle([reviewWord,...shuffle(list.filter(w=>w.word!==reviewWord.word)).slice(0,3)]);$("#reviewPic").textContent=reviewWord.pic;$("#reviewMessage").textContent="";$("#reviewChoices").innerHTML=choices.map(w=>`<button data-word="${w.word}">${w.word.toUpperCase()}</button>`).join("");$$("#reviewChoices button").forEach(b=>b.onclick=()=>answerReview(b));setTimeout(()=>speak(reviewWord.word),180)}function answerReview(b){const ok=b.dataset.word===reviewWord.word;state.mastery[reviewWord.word]=Math.max(0,Math.min(100,masteryFor(reviewWord.word)+(ok?10:-4)));b.classList.add(ok?"correct":"wrong");$("#reviewMessage").textContent=ok?"ถูกต้อง เก่งมาก ⭐":"คำตอบคือ "+reviewWord.word.toUpperCase();save();setTimeout(nextReviewQuestion,900)}
-function renderParents(){$("#pCoins").textContent=state.coins;$("#pStars").textContent=state.stars;$("#pWords").textContent=state.words}
+function renderParents(){const unlocked=WORDS.filter(w=>state.unlocked.includes(w.word));const total=(state.reviewTotal||0)+(state.gateCorrect||0)+(state.gateWrong||0)+(state.monsterWins||0)+(state.monsterLosses||0);const correct=(state.reviewCorrect||0)+(state.gateCorrect||0)+(state.monsterWins||0);const accuracy=total?Math.round(correct/total*100):0;const avg=unlocked.length?Math.round(unlocked.reduce((a,w)=>a+masteryFor(w.word),0)/unlocked.length):0;$("#pCoins").textContent=state.coins;$("#pStars").textContent=state.stars;$("#pWords").textContent=state.words;$("#pUnlocked").textContent=unlocked.length;$("#pAccuracy").textContent=accuracy+"%";$("#pAverageMastery").textContent=avg+"%";const weak=unlocked.slice().sort((a,b)=>masteryFor(a.word)-masteryFor(b.word)).slice(0,5);$("#weakWords").innerHTML=weak.length?weak.map(w=>`<div class="weak-item"><span>${w.pic} <b>${w.word.toUpperCase()}</b></span><span>${masteryFor(w.word)}%</span></div>`).join(""):"<p>ยังไม่มีข้อมูล</p>";$("#masteryRows").innerHTML=unlocked.length?unlocked.map(w=>`<div class="mastery-row"><b>${w.pic} ${w.word.toUpperCase()}</b><div class="parent-track"><span style="width:${masteryFor(w.word)}%"></span></div><b>${masteryFor(w.word)}%</b></div>`).join(""):"<p>เล่นเกมเพื่อเริ่มเก็บข้อมูล</p>";const last=state.lastPlayed?new Date(state.lastPlayed).toLocaleString("th-TH"):"ยังไม่เคยเล่น";$("#activityInfo").innerHTML=`<div><b>${state.reviewTotal||0}</b><span>ข้อทบทวน</span></div><div><b>${state.monsterWins||0}</b><span>หนีสำเร็จ</span></div><div><b>${last}</b><span>เล่นล่าสุด</span></div>`}
 
 
 let monsterState={round:0,total:6,time:16,progress:0,lives:3,timer:null,built:[],word:null,locked:false};
@@ -152,6 +152,7 @@ function monsterEscaped(){
   clearInterval(monsterState.timer);
   state.stars++;
   state.words++;
+  state.monsterWins=(state.monsterWins||0)+1;
   if(!state.unlocked.includes(monsterState.word.word))state.unlocked.push(monsterState.word.word);state.mastery[monsterState.word.word]=Math.min(100,masteryFor(monsterState.word.word)+15);
   save();
   $("#escapeHero").style.left="72%";
@@ -175,7 +176,7 @@ function monsterCaught(){
   if(monsterState.locked)return;
   monsterState.locked=true;
   clearInterval(monsterState.timer);
-  $("#escapeMonster").style.left="18%";
+  state.monsterLosses=(state.monsterLosses||0)+1;save();$("#escapeMonster").style.left="18%";
   $("#monsterMessage").textContent="ถูกจับแล้ว ลองคำนี้อีกครั้ง";
   speak("try again",.82);
   $("#monsterLetters").insertAdjacentHTML("beforeend",'<button class="monster-letter" id="monsterRetry">ลองใหม่</button>');
@@ -219,7 +220,7 @@ function createGame(){
  if(game){game.destroy(true);game=null}
  game=new Phaser.Game({type:Phaser.AUTO,parent:"game",width:960,height:540,backgroundColor:"#8bd2ff",physics:{default:"arcade",arcade:{gravity:{y:1400},debug:false}},scene:[World],scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH,width:960,height:540,expandParent:true}});
 }
-function pressLetter(b,it){const e=it.word.toUpperCase()[built.length];if(b.dataset.l!==e){$("#message").textContent="ลองอีกครั้งนะ";return}b.disabled=true;built.push(e);$$(".slot")[built.length-1].textContent=e;if(built.length===it.word.length){state.stars++;state.words++;if(!state.unlocked.includes(it.word))state.unlocked.push(it.word);state.mastery[it.word]=Math.min(100,masteryFor(it.word)+15);save();$("#message").textContent="เปิดประตูสำเร็จ! ⭐";setTimeout(()=>{$("#gateModal").classList.add("hidden");scene.physics.resume();scene.modal=false;scene.gate.disableBody(true,true);scene.hero.x+=120},700)}}
+function pressLetter(b,it){const e=it.word.toUpperCase()[built.length];if(b.dataset.l!==e){state.gateWrong=(state.gateWrong||0)+1;save();$("#message").textContent="ลองอีกครั้งนะ";return}b.disabled=true;built.push(e);$$(".slot")[built.length-1].textContent=e;if(built.length===it.word.length){state.stars++;state.words++;state.gateCorrect=(state.gateCorrect||0)+1;if(!state.unlocked.includes(it.word))state.unlocked.push(it.word);state.mastery[it.word]=Math.min(100,masteryFor(it.word)+15);save();$("#message").textContent="เปิดประตูสำเร็จ! ⭐";setTimeout(()=>{$("#gateModal").classList.add("hidden");scene.physics.resume();scene.modal=false;scene.gate.disableBody(true,true);scene.hero.x+=120},700)}}
 $("#playBtn").onclick=()=>show("characterScreen");
 $("#continueBtn").onclick=()=>{show("gameScreen");createGame()};
 $$("[data-character]").forEach(b=>b.onclick=()=>{state.character=b.dataset.character;save();show("gameScreen");createGame()});
@@ -232,7 +233,7 @@ bindHoldButton($("#jump"),()=>{
 },()=>{});
 $("#hearWord").onclick=()=>speak(WORDS[state.words%WORDS.length].word);$("#hearSpell").onclick=()=>spell(WORDS[state.words%WORDS.length].word);
 $("#voiceSelect").onchange=e=>voiceName=e.target.value;$("#voiceRate").oninput=e=>voiceRate=Number(e.target.value);$("#testVoice").onclick=()=>speak("apple");speechSynthesis.onvoiceschanged=loadVoices;
-$("#resetBtn").onclick=()=>{state={coins:0,stars:0,words:0,character:"boy",unlocked:[],mastery:{}};save();renderParents()};
+$("#resetBtn").onclick=()=>{state={coins:0,stars:0,words:0,character:"boy",unlocked:[],mastery:{},reviewCorrect:0,reviewTotal:0,gateCorrect:0,gateWrong:0,monsterWins:0,monsterLosses:0,lastPlayed:""};save();renderParents()};
 $("#monsterHomeBtn").onclick=()=>{clearInterval(monsterState.timer);show("menuScreen")};
 $("#monsterHearWord").onclick=()=>monsterState.word&&speak(monsterState.word.word);
 $("#monsterHearSpell").onclick=()=>monsterState.word&&spell(monsterState.word.word);
